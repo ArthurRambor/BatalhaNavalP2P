@@ -64,8 +64,6 @@ class BatalhaNavalP2P:
         self.tcp_thread = threading.Thread(target=self.tcp_listener, daemon=True)
         self.tcp_thread.start()
 
-        # Posicao do cursor e status
-        self.selected_cell = None
         self.message = ""  
 
         self.last_action_time = time.time()
@@ -117,9 +115,9 @@ class BatalhaNavalP2P:
         lines = [
             "Batalha Naval P2P",
             "Comandos:",
-            "Clique para atirar/scout",
-            "Use as setas para mover",
-            "Pressione S para sair"
+            "Clique ESQ: Tiro  |  DIR: Scout",
+            "Setas: Mover navio",
+            "S: Sair"
         ]
 
         for i, line in enumerate(lines):
@@ -129,13 +127,6 @@ class BatalhaNavalP2P:
         if self.message:
             msg_text = self.font.render(self.message, True, RED)
             self.screen.blit(msg_text, (x_offset, y_offset + 200))
-
-    def handle_mouse_button(self, pos):
-        x = pos[0] // CELL_SIZE
-        y = pos[1] // CELL_SIZE
-        if x < GRID_SIZE and y < GRID_SIZE:
-            self.selected_cell = (x, y)
-            self.message = f"Selecione ação para celula ({x}, {y}). (Clique com esquerdo para atirar, direito para scout)"
 
     def shoot(self, x, y):
         self.shot_grid[y][x] = True
@@ -171,12 +162,13 @@ class BatalhaNavalP2P:
                     elif event.key == pygame.K_DOWN:
                         self.move_ship(0, 1)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:  # Esquerdo - atirar
-                        if self.selected_cell:
-                            self.shoot(*self.selected_cell)
-                    elif event.button == 3:  # Direito - scout
-                        if self.selected_cell:
-                            self.scout(*self.selected_cell)
+                    x = event.pos[0] // CELL_SIZE
+                    y = event.pos[1] // CELL_SIZE
+                    if x < GRID_SIZE and y < GRID_SIZE:
+                        if event.button == 1:   # Esquerdo - atirar
+                            self.shoot(x, y)
+                        elif event.button == 3: # Direito - scout
+                            self.scout(x, y)
 
             self.screen.fill(BLUE)
             self.draw_grid()
@@ -186,7 +178,6 @@ class BatalhaNavalP2P:
 
         pygame.quit()
         sys.exit(0)
-
 
 if __name__ == "__main__":
     game = BatalhaNavalP2P()
